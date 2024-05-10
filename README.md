@@ -1,7 +1,7 @@
 # Mercado Libre Article Scraper
 
 ## Introduction
-This Python script is designed to scrape article data from MercadoLibre, a popular online marketplace. It utilizes web scraping techniques to extract information about cell phones, including their names, prices, discounts, and ratings.
+This Python script is designed to scrape article data from Mercado Libre, a popular online marketplace. It utilizes web scraping techniques to extract information about cell phones, including their names, prices, discounts, and ratings.
 
 ## Requirements
 To run this script, you need to have the following Python libraries installed:
@@ -26,7 +26,7 @@ Output: The script will scrape article data from Mercado Libre and export it to 
 ## Script Details
 ### Functions
 export_to_csv(article_list, csv_file_path): Exports article data to a CSV file.
-find_articles(mercado_articles): Finds and extracts article data from MercadoLibre articles.
+find_articles(mercado_articles): Finds and extracts article data from Mercado Libre articles.
 select_article(art): Selects the URL for a specific article type or category.
 select_page(page): Selects the URL for a specific page number.
 
