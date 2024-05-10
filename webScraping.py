@@ -44,7 +44,7 @@ def export_to_csv(article_list, csv_file_path):
 
 def find_articles(mercado_articles):
     """
-    Find and extract article data from MercadoLibre articles.
+    Find and extract article data from Mercado Libre articles.
 
     Args:
         mercado_articles (list): List of BeautifulSoup elements representing articles.
@@ -108,7 +108,7 @@ def select_page(page):
 # Select article and page
 article_url = select_article('cell-phones')  
 page_url = select_page('51')  
-print(page_url)
+
 # Make a GET request to the article URL and get HTML content
 html_text = requests.get(page_url).text  
 # Create a BeautifulSoup instance to parse HTML content
