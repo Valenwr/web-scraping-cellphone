@@ -1,6 +1,5 @@
 from collections import namedtuple
 from bs4 import BeautifulSoup
-from selenium import webdriver
 import requests
 import pandas as pd
 import os
@@ -30,21 +29,20 @@ def export_to_csv(article_list, csv_file_path):
         })
 
     df = pd.DataFrame(data)
-    if os.path.exists(csv_file_path):
-        try:
+    try:
+        if os.path.exists(csv_file_path):
             with open(csv_file_path, 'a', newline='') as existing_file:
                 df.to_csv(existing_file, header=False, index=False)
             return 'New information added successfully'
-        except Exception as e:
-            print("An error occurred:", e)
-    else:
-        df.to_csv(csv_file_path, index=False)
-        return 'Information exported successfully'
-
+        else:
+            df.to_csv(csv_file_path, index=False)
+            return 'Information exported successfully'
+    except Exception as e:
+        return f"An error occurred: {e}"
 
 def find_articles(mercado_articles):
     """
-    Find and extract article data from MercadoLibre articles.
+    Find and extract article data from Mercado Libre articles.
 
     Args:
         mercado_articles (list): List of BeautifulSoup elements representing articles.
@@ -54,27 +52,22 @@ def find_articles(mercado_articles):
     """
     articles_list = []
     for article in mercado_articles:
-        name = article.find('h2', class_='ui-search-item__title').text
-        old_price = article.find('span', class_='andes-money-amount__fraction').text.replace('.', '')
-        current_price = article.find('span', class_='andes-money-amount__fraction').text.replace('.', '')
-        discount = article.find('span', class_='ui-search-price__discount shops__price-discount')
-        ratings = article.find('span', class_='ui-search-reviews__amount')
+        try:
+            name = article.find('h2', class_='ui-search-item__title').text
+            old_price = article.find('span', class_='andes-money-amount__fraction').text.replace('.', '')
+            current_price = article.find('span', class_='andes-money-amount__fraction').text.replace('.', '')
+            discount = article.find('span', class_='ui-search-price__discount shops__price-discount')
+            ratings = article.find('span', class_='ui-search-reviews__amount')
 
-        if discount is not None:
-            discount = discount.text
-        else:
-            discount = 'No discount'
+            discount = discount.text if discount else 'No discount'
+            ratings = ratings.text if ratings else 'No ratings available'
 
-        if ratings is not None:
-            ratings = ratings.text
-        else:
-            ratings = 'No ratings available'
-
-        article_data = Article(name, old_price, current_price, discount, ratings)
-        articles_list.append(article_data)
+            article_data = Article(name, old_price, current_price, discount, ratings)
+            articles_list.append(article_data)
+        except AttributeError as e:
+            print(f"Error parsing article: {e}")
 
     return articles_list
-
 
 def select_article(art):
     """
@@ -86,9 +79,7 @@ def select_article(art):
     Returns:
         str: URL for the specified article type or category.
     """
-    website_url = f'https://listado.mercadolibre.com.co/{art}#D[A:celular]'
-    return website_url
-
+    return f'https://listado.mercadolibre.com.co/{art}#D[A:celular]'
 
 def select_page(page):
     """
@@ -100,28 +91,24 @@ def select_page(page):
     Returns:
         str: URL for the specified page number.
     """
-    page_url = f'https://listado.mercadolibre.com.co/celulares-telefonos/celulares-smartphones/celulares_Desde_' \
-               f'{page}_NoIndex_True'
-    return page_url
+    return f'https://listado.mercadolibre.com.co/celulares-telefonos/celulares-smartphones/celulares_Desde_{page}_NoIndex_True'
 
+def main():
+    article_url = select_article('cell-phones')
+    page_url = select_page('51')
 
-# Select article and page
-article_url = select_article('cell-phones')  
-page_url = select_page('51')  
-print(page_url)
-# Make a GET request to the article URL and get HTML content
-html_text = requests.get(page_url).text  
-# Create a BeautifulSoup instance to parse HTML content
-soup = BeautifulSoup(html_text, 'html.parser')
-# Find and extract all <li> elements with the specified class
-articles = soup.find_all('li', class_='ui-search-layout__item shops__layout-item ui-search-layout__stack')
+    try:
+        html_text = requests.get(page_url).text
+        soup = BeautifulSoup(html_text, 'html.parser')
+        articles = soup.find_all('li', class_='ui-search-layout__item shops__layout-item ui-search-layout__stack')
+        mercado_articles = find_articles(articles)
 
-# Execute
-mercado_articles = find_articles(articles)
+        script_dir = os.path.dirname(os.path.realpath(__file__))
+        csv_file_path = os.path.join(script_dir, 'cell_phones.csv')
+        result_message = export_to_csv(mercado_articles, csv_file_path)
+        print(result_message)
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
 
-# Get the directory of the current script file
-script_dir = os.path.dirname(os.path.realpath(__file__))
-csv_file_path = os.path.join(script_dir, 'cell_phones.csv')
-
-# Save
-export_to_csv(mercado_articles, csv_file_path)
+if __name__ == "__main__":
+    main()
