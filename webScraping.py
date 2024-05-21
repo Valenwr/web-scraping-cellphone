@@ -93,15 +93,20 @@ def select_page(page):
     """
     return f'https://listado.mercadolibre.com.co/celulares-telefonos/celulares-smartphones/celulares_Desde_{page}_NoIndex_True'
 
-def main():
-    article_url = select_article('cell-phones')
-    page_url = select_page('51')
 
-    try:
-        html_text = requests.get(page_url).text
-        soup = BeautifulSoup(html_text, 'html.parser')
-        articles = soup.find_all('li', class_='ui-search-layout__item shops__layout-item ui-search-layout__stack')
-        mercado_articles = find_articles(articles)
+# Select article and page
+article_url = select_article('cell-phones')  
+page_url = select_page('51')  
+print(page_url)
+# Make a GET request to the article URL and get HTML content
+html_text = requests.get(page_url).text  
+# Create a BeautifulSoup instance to parse HTML content
+soup = BeautifulSoup(html_text, 'html.parser')
+# Find and extract all <li> elements with the specified class
+articles = soup.find_all('li', class_='ui-search-layout__item shops__layout-item ui-search-layout__stack')
+
+# Execute
+mercado_articles = find_articles(articles)
 
         script_dir = os.path.dirname(os.path.realpath(__file__))
         csv_file_path = os.path.join(script_dir, 'cell_phones.csv')
